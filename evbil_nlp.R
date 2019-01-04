@@ -561,9 +561,9 @@ modals <- function(x) {
   {out <- 'kan'}
   else if (x == "kunnet")
   {out <- 'kan'}
-  else if (x == "vulle")
+  else if (x == "ville")
   {out <- 'vill'}
-  else if (x == "vullet")
+  else if (x == "villet")
   {out <- 'vill'}
   else if (x == "skulle")
   {out <- 'skal'}
@@ -573,11 +573,11 @@ modals <- function(x) {
   return(out)
 }
 # faster and easier
-ma <- ' [må]|[måtte]|[måttet] '
-boer <-  ' [bør]|[burde]|[burden] '
-vil <- ' [vil]|[vulle]|[vullet] '
-skal <- ' [skal]|[skulle]|[skullet] '
-kan <- ' [kan]|[kunne]|[kunnet]'
+ma <- '(må)|(måtte)'
+boer <-  '(bør)|(burde)'
+vil <- '(vil)|(ville)'
+skal <- '(skal)|(skulle)'
+kan <- '(kan)|(kunne)'
 
 dt_words <- evdata %>%
   mutate(ma = str_count(openanswer, ma)) %>%
@@ -585,6 +585,12 @@ dt_words <- evdata %>%
   mutate(vil = str_count(openanswer, vil)) %>%
   mutate(skal = str_count(openanswer, skal)) %>%
   mutate(kan = str_count(openanswer, kan))
+# small sample, not sure this is significant, but still potentially interesting
+dt_words %>%
+  group_by(Age) %>%
+  select(Party, ma, boer, vil, skal, kan) %>%
+  summarize(ma_summ = sum(ma), boer_summ = sum(boer), vil_sum = sum(vil), kan_sum = sum(kan))
+
 
 ## modal verbs by opinion of evs
 p1 <- dt_words %>%
@@ -676,7 +682,7 @@ p2 <- dt_words %>%
   transform(Party = reorder(Party, maP)) %>%
   ggplot(aes(Party, maP)) +
   geom_col()+
-  ggtitle('Times per Thousands words using boer-')
+  ggtitle('Times per Thousands words using bør-')
 p3 <- dt_words %>%
   group_by(Party) %>%
   summarize(S = sum(vil), words = sum(wc), maP = S/(words/1000)) %>%
@@ -700,6 +706,3 @@ p5 <- dt_words %>%
   ggtitle('Times per Thousands words using kan-')
 grid.arrange(p1, p2, p3, p4, p5)
 
-evdata <- mutate(evdata, modals = modals(openanswer))
-evdata$modals <- lapply(evdata$openanswer, modals)
-sum(str_count(evdata$modals, 'skal'))
